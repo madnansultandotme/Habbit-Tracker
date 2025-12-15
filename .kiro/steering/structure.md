@@ -5,15 +5,19 @@
 │   ├── app/
 │   │   ├── api/
 │   │   │   ├── routes/         # Route handlers by domain
+│   │   │   │   ├── auth.py     # Authentication endpoints
 │   │   │   │   ├── habits.py   # Habit CRUD endpoints
 │   │   │   │   └── status.py   # Health/status endpoints
 │   │   │   └── router.py       # Main API router aggregator
 │   │   ├── core/
 │   │   │   ├── config.py       # Pydantic Settings configuration
-│   │   │   └── database.py     # MongoDB connection manager
+│   │   │   ├── database.py     # MongoDB connection manager
+│   │   │   ├── deps.py         # Dependency injection (auth)
+│   │   │   └── security.py     # JWT/password utilities
 │   │   ├── models/             # Pydantic schemas
 │   │   │   ├── habit.py        # Habit models
-│   │   │   └── status.py       # Status models
+│   │   │   ├── status.py       # Status models
+│   │   │   └── user.py         # User/auth models
 │   │   └── main.py             # FastAPI app factory
 │   ├── tests/                  # Pytest test suite
 │   ├── server.py               # Legacy entry point (imports app.main)
@@ -30,7 +34,7 @@
 │   │   │   ├── HabitsContext.js   # Habit state management
 │   │   │   └── ThemeContext.js    # Theme state (light/dark)
 │   │   ├── hooks/          # Custom React hooks
-│   │   ├── lib/            # Utility functions (cn helper)
+│   │   ├── lib/            # Utility functions (cn helper, api client)
 │   │   ├── pages/          # Page components
 │   │   ├── App.js          # Root component with providers
 │   │   ├── index.js        # Entry point

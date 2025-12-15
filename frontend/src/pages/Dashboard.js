@@ -4,6 +4,8 @@ import HabitList from '../components/HabitList';
 import AddHabitDialog from '../components/AddHabitDialog';
 import CalendarView from '../components/CalendarView';
 import StatsCard from '../components/StatsCard';
+import { StatsGridSkeleton } from '../components/StatsCardSkeleton';
+import { HabitListSkeleton } from '../components/HabitCardSkeleton';
 import { useHabits } from '../contexts/HabitsContext';
 import { Button } from '@/components/ui/button';
 import { Plus, Calendar, ListTodo } from 'lucide-react';
@@ -11,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Dashboard = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const { habits, getTodayCompletions } = useHabits();
+  const { habits, getTodayCompletions, isLoading } = useHabits();
 
   return (
     <div className="min-h-screen bg-background">
@@ -19,26 +21,30 @@ const Dashboard = () => {
       
       <main className="container max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatsCard
-            title="Total Habits"
-            value={habits.length}
-            icon={<ListTodo className="w-5 h-5" />}
-            color="primary"
-          />
-          <StatsCard
-            title="Today's Progress"
-            value={`${getTodayCompletions()} / ${habits.length}`}
-            icon={<Calendar className="w-5 h-5" />}
-            color="success"
-          />
-          <StatsCard
-            title="Completion Rate"
-            value={habits.length > 0 ? `${Math.round((getTodayCompletions() / habits.length) * 100)}%` : '0%'}
-            icon={<ListTodo className="w-5 h-5" />}
-            color="accent"
-          />
-        </div>
+        {isLoading ? (
+          <StatsGridSkeleton />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <StatsCard
+              title="Total Habits"
+              value={habits.length}
+              icon={<ListTodo className="w-5 h-5" />}
+              color="primary"
+            />
+            <StatsCard
+              title="Today's Progress"
+              value={`${getTodayCompletions()} / ${habits.length}`}
+              icon={<Calendar className="w-5 h-5" />}
+              color="success"
+            />
+            <StatsCard
+              title="Completion Rate"
+              value={habits.length > 0 ? `${Math.round((getTodayCompletions() / habits.length) * 100)}%` : '0%'}
+              icon={<ListTodo className="w-5 h-5" />}
+              color="accent"
+            />
+          </div>
+        )}
 
         {/* Main Content */}
         <Tabs defaultValue="habits" className="w-full">
@@ -64,7 +70,7 @@ const Dashboard = () => {
           </div>
 
           <TabsContent value="habits" className="mt-0">
-            <HabitList />
+            {isLoading ? <HabitListSkeleton count={3} /> : <HabitList />}
           </TabsContent>
 
           <TabsContent value="calendar" className="mt-0">
