@@ -16,7 +16,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     """Schema for user registration."""
 
-    password: str = Field(..., min_length=8, max_length=100)
+    password: str = Field(..., min_length=6)
 
 
 class UserLogin(BaseModel):
@@ -26,13 +26,6 @@ class UserLogin(BaseModel):
     password: str
 
 
-class UserUpdate(BaseModel):
-    """Schema for updating user profile."""
-
-    name: str | None = Field(None, min_length=1, max_length=100)
-    email: EmailStr | None = None
-
-
 class User(UserBase):
     """Complete user schema (without password)."""
 
@@ -40,7 +33,6 @@ class User(UserBase):
 
     id: str = Field(default_factory=lambda: str(uuid4()))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    is_active: bool = True
 
 
 class UserInDB(User):
@@ -53,19 +45,10 @@ class Token(BaseModel):
     """JWT token response."""
 
     access_token: str
-    refresh_token: str
     token_type: str = "bearer"
 
 
-class TokenRefresh(BaseModel):
-    """Token refresh request."""
+class TokenData(BaseModel):
+    """Data extracted from JWT token."""
 
-    refresh_token: str
-
-
-class TokenPayload(BaseModel):
-    """JWT token payload."""
-
-    sub: str  # user_id
-    exp: datetime
-    type: str = "access"
+    user_id: str | None = None

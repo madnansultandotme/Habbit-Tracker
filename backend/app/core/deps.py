@@ -5,61 +5,55 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.core.database import get_database
-from app.core.security import decode_token
+from app.core.security import decode_access_token
 from app.models.user import User
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
     db: AsyncIOMotorDatabase = Depends(get_database),
 ) -> User:
-    """Get the current authenticated user from JWT token."""
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    token = credentials.credentials
-    payload = decode_token(token)
-
-    if payload is None:
-        raise credentials_exception
-
-    # Check token type
-    if payload.get("type") == "refresh":
+    """Get current authenticated user from JWT token."""
+    if not credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Cannot use refresh token for authentication",
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user_id: str = payload.get("sub")
-    if user_id is None:
-        raise credentials_exception
+    payload = decode_access_token(credentials.credentials)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
 
     user = await db.users.find_one({"id": user_id}, {"_id": 0, "hashed_password": 0})
-    if user is None:
-        raise credentials_exception
-
-    if not user.get("is_active", True):
+    if not user:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is disabled",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
         )
 
     return User(**user)
 
 
-async def get_current_user_optional(
-    credentials: HTTPAuthorizationCredentials | None = Depends(
-        HTTPBearer(auto_error=False)
-    ),
+async def get_optional_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
     db: AsyncIOMotorDatabase = Depends(get_database),
 ) -> User | None:
     """Get current user if authenticated, None otherwise."""
-    if credentials is None:
+    if not credentials:
         return None
 
     try:
