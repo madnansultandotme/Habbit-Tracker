@@ -32,8 +32,17 @@ yarn test             # Run tests
 
 # Backend
 cd backend
-pip install -r requirements.txt
-uvicorn server:app --reload --port 8000
+python -m venv venv                           # Create virtual environment
+.\venv\Scripts\Activate.ps1                   # Activate venv (Windows)
+pip install -r requirements.txt               # Install dependencies
+uvicorn app.main:app --reload --port 8000     # Start dev server
+
+# Backend code quality
+black app tests                               # Format code
+isort app tests                               # Sort imports
+flake8 app tests                              # Lint code
+mypy app                                      # Type check
+pytest                                        # Run tests
 ```
 
 ## Path Aliases

@@ -2,9 +2,24 @@
 
 ```
 ├── backend/
-│   ├── server.py           # FastAPI app, routes, and MongoDB setup
-│   ├── requirements.txt    # Python dependencies
-│   └── .env                # Backend environment config
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── routes/         # Route handlers by domain
+│   │   │   │   ├── habits.py   # Habit CRUD endpoints
+│   │   │   │   └── status.py   # Health/status endpoints
+│   │   │   └── router.py       # Main API router aggregator
+│   │   ├── core/
+│   │   │   ├── config.py       # Pydantic Settings configuration
+│   │   │   └── database.py     # MongoDB connection manager
+│   │   ├── models/             # Pydantic schemas
+│   │   │   ├── habit.py        # Habit models
+│   │   │   └── status.py       # Status models
+│   │   └── main.py             # FastAPI app factory
+│   ├── tests/                  # Pytest test suite
+│   ├── server.py               # Legacy entry point (imports app.main)
+│   ├── requirements.txt        # Python dependencies
+│   ├── pyproject.toml          # Tool configuration (black, isort, mypy)
+│   └── .env                    # Backend environment config
 │
 ├── frontend/
 │   ├── src/
