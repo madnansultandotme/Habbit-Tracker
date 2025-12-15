@@ -2,10 +2,11 @@
 
 from fastapi import APIRouter
 
-from app.api.routes import habits, status
+from app.api.routes import auth, habits, status
 
 api_router = APIRouter(prefix="/api")
 
+api_router.include_router(auth.router)
 api_router.include_router(habits.router)
 api_router.include_router(status.router)
 

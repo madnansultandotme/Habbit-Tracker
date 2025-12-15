@@ -2,6 +2,7 @@ import React from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import { Moon, Sun, Target } from 'lucide-react';
+import ConnectionStatus from './ConnectionStatus';
 
 export const Header = () => {
   const { theme, toggleTheme } = useTheme();
@@ -19,19 +20,22 @@ export const Header = () => {
           </div>
         </div>
         
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          className="rounded-lg hover:bg-muted"
-        >
-          {theme === 'light' ? (
-            <Moon className="h-5 w-5" />
-          ) : (
-            <Sun className="h-5 w-5" />
-          )}
-          <span className="sr-only">Toggle theme</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ConnectionStatus />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="rounded-lg hover:bg-muted"
+          >
+            {theme === 'light' ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+        </div>
       </div>
     </header>
   );
