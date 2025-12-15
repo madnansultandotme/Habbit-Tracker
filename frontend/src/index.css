@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+    font-family:
+        source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+@layer base {
+    :root {
+        /* Notion-inspired soft color palette */
+        --background: 0 0% 99%;
+        --foreground: 240 10% 15%;
+        
+        /* Soft accent colors */
+        --primary: 220 70% 60%;
+        --primary-foreground: 0 0% 100%;
+        --primary-light: 220 70% 95%;
+        
+        --secondary: 270 50% 95%;
+        --secondary-foreground: 270 50% 40%;
+        
+        --accent: 150 40% 96%;
+        --accent-foreground: 150 40% 30%;
+        
+        --success: 142 71% 45%;
+        --success-foreground: 0 0% 100%;
+        --success-light: 142 50% 95%;
+        
+        /* Neutral tones */
+        --muted: 240 5% 96%;
+        --muted-foreground: 240 4% 46%;
+        
+        --card: 0 0% 100%;
+        --card-foreground: 240 10% 15%;
+        
+        --popover: 0 0% 100%;
+        --popover-foreground: 240 10% 15%;
+        
+        --border: 240 6% 90%;
+        --input: 240 6% 90%;
+        --ring: 220 70% 60%;
+        
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 98%;
+        
+        /* Habit-specific colors */
+        --habit-incomplete: 240 5% 96%;
+        --habit-complete: 142 50% 95%;
+        --habit-streak: 30 100% 96%;
+        
+        --radius: 0.75rem;
+        
+        /* Custom shadows */
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+        
+        /* Transitions */
+        --transition-smooth: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .dark {
+        --background: 240 10% 8%;
+        --foreground: 0 0% 95%;
+        
+        --primary: 220 70% 55%;
+        --primary-foreground: 0 0% 100%;
+        --primary-light: 220 70% 15%;
+        
+        --secondary: 270 50% 15%;
+        --secondary-foreground: 270 50% 85%;
+        
+        --accent: 150 40% 15%;
+        --accent-foreground: 150 40% 85%;
+        
+        --success: 142 71% 45%;
+        --success-foreground: 0 0% 100%;
+        --success-light: 142 50% 15%;
+        
+        --muted: 240 10% 15%;
+        --muted-foreground: 240 5% 60%;
+        
+        --card: 240 10% 10%;
+        --card-foreground: 0 0% 95%;
+        
+        --popover: 240 10% 10%;
+        --popover-foreground: 0 0% 95%;
+        
+        --border: 240 10% 20%;
+        --input: 240 10% 20%;
+        --ring: 220 70% 55%;
+        
+        --destructive: 0 62% 50%;
+        --destructive-foreground: 0 0% 98%;
+        
+        --habit-incomplete: 240 10% 15%;
+        --habit-complete: 142 50% 15%;
+        --habit-streak: 30 100% 15%;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    
+    body {
+        @apply bg-background text-foreground;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        @apply bg-muted;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        @apply bg-border rounded-lg;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-muted-foreground/30;
+    }
+}
+
+@layer components {
+    /* Notion-style checkbox animation */
+    .habit-checkbox {
+        @apply transition-all duration-300 ease-in-out;
+    }
+    
+    .habit-checkbox:checked {
+        @apply scale-110;
+    }
+    
+    /* Smooth transitions for interactive elements */
+    .interactive-element {
+        transition: all var(--transition-smooth);
+    }
+    
+    /* Card hover effect */
+    .card-hover {
+        @apply transition-all duration-200;
+    }
+    
+    .card-hover:hover {
+        @apply shadow-md translate-y-[-2px];
+    }
+}
+
+@layer utilities {
+    /* Custom shadows using design tokens */
+    .shadow-custom-sm {
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .shadow-custom-md {
+        box-shadow: var(--shadow-md);
+    }
+    
+    .shadow-custom-lg {
+        box-shadow: var(--shadow-lg);
+    }
+}
+
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+
+    [data-debug-wrapper="true"] > * {
+        margin-left: inherit;
+        margin-right: inherit;
+        margin-top: inherit;
+        margin-bottom: inherit;
+        padding-left: inherit;
+        padding-right: inherit;
+        padding-top: inherit;
+        padding-bottom: inherit;
+        column-gap: inherit;
+        row-gap: inherit;
+        gap: inherit;
+        border-left-width: inherit;
+        border-right-width: inherit;
+        border-top-width: inherit;
+        border-bottom-width: inherit;
+        border-left-style: inherit;
+        border-right-style: inherit;
+        border-top-style: inherit;
+        border-bottom-style: inherit;
+        border-left-color: inherit;
+        border-right-color: inherit;
+        border-top-color: inherit;
+        border-bottom-color: inherit;
+    }
+}
