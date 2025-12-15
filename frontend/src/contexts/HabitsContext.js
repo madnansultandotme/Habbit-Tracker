@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, parseISO } from 'date-fns';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
+import api from '@/lib/api';
 
 const HabitsContext = createContext();
 
@@ -17,40 +18,120 @@ export const HabitsProvider = ({ children }) => {
   const [habits, setHabits] = useState([]);
   const [completions, setCompletions] = useState({});
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [isOnline, setIsOnline] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from localStorage on mount
-  useEffect(() => {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      try {
-        const { habits: savedHabits, completions: savedCompletions } = JSON.parse(savedData);
-        setHabits(savedHabits || []);
-        setCompletions(savedCompletions || {});
-      } catch (error) {
-        console.error('Error loading data:', error);
+  // Check backend connectivity and load data
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Try to connect to backend
+      await api.healthCheck();
+      setIsOnline(true);
+
+      // Load from backend
+      const backendHabits = await api.getHabits();
+      
+      // Transform backend data to frontend format
+      const transformedHabits = backendHabits.map(h => ({
+        id: h.id,
+        name: h.name,
+        color: h.color,
+        createdAt: h.created_at,
+      }));
+      
+      // Load completions for each habit
+      const completionsMap = {};
+      for (const habit of transformedHabits) {
+        const habitCompletions = await api.getCompletions(habit.id);
+        habitCompletions.forEach(c => {
+          if (c.completed) {
+            if (!completionsMap[c.date]) completionsMap[c.date] = {};
+            completionsMap[c.date][c.habit_id] = true;
+          }
+        });
       }
+
+      setHabits(transformedHabits);
+      setCompletions(completionsMap);
+      
+      // Also save to localStorage as backup
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ 
+        habits: transformedHabits, 
+        completions: completionsMap 
+      }));
+    } catch (error) {
+      console.warn('Backend unavailable, using localStorage:', error.message);
+      setIsOnline(false);
+      
+      // Fallback to localStorage
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        try {
+          const { habits: savedHabits, completions: savedCompletions } = JSON.parse(savedData);
+          setHabits(savedHabits || []);
+          setCompletions(savedCompletions || {});
+        } catch (e) {
+          console.error('Error loading localStorage data:', e);
+        }
+      }
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  // Save data to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ habits, completions }));
-  }, [habits, completions]);
+    loadData();
+  }, [loadData]);
 
-  const addHabit = (habitName, color = 'primary') => {
+  // Save to localStorage when data changes (offline backup)
+  useEffect(() => {
+    if (!isLoading) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ habits, completions }));
+    }
+  }, [habits, completions, isLoading]);
+
+  const addHabit = async (habitName, color = 'primary') => {
     const newHabit = {
       id: Date.now().toString(),
       name: habitName,
       color,
       createdAt: new Date().toISOString(),
     };
-    setHabits(prev => [...prev, newHabit]);
-    return newHabit;
+
+    if (isOnline) {
+      try {
+        const created = await api.createHabit({ name: habitName, color });
+        const transformedHabit = {
+          id: created.id,
+          name: created.name,
+          color: created.color,
+          createdAt: created.created_at,
+        };
+        setHabits(prev => [...prev, transformedHabit]);
+        return transformedHabit;
+      } catch (error) {
+        console.error('Failed to create habit on backend:', error);
+        // Fallback to local
+        setHabits(prev => [...prev, newHabit]);
+        return newHabit;
+      }
+    } else {
+      setHabits(prev => [...prev, newHabit]);
+      return newHabit;
+    }
   };
 
-  const deleteHabit = (habitId) => {
+  const deleteHabit = async (habitId) => {
+    if (isOnline) {
+      try {
+        await api.deleteHabit(habitId);
+      } catch (error) {
+        console.error('Failed to delete habit on backend:', error);
+      }
+    }
+
     setHabits(prev => prev.filter(h => h.id !== habitId));
-    // Clean up completions for this habit
     setCompletions(prev => {
       const newCompletions = { ...prev };
       Object.keys(newCompletions).forEach(date => {
@@ -60,8 +141,17 @@ export const HabitsProvider = ({ children }) => {
     });
   };
 
-  const toggleCompletion = (habitId, date) => {
+  const toggleCompletion = async (habitId, date) => {
     const dateKey = format(date, 'yyyy-MM-dd');
+
+    if (isOnline) {
+      try {
+        await api.toggleCompletion(habitId, dateKey);
+      } catch (error) {
+        console.error('Failed to toggle completion on backend:', error);
+      }
+    }
+
     setCompletions(prev => {
       const newCompletions = { ...prev };
       if (!newCompletions[dateKey]) {
@@ -142,6 +232,9 @@ export const HabitsProvider = ({ children }) => {
         getCompletionRate,
         getTodayCompletions,
         getMonthlyCompletions,
+        isOnline,
+        isLoading,
+        refresh: loadData,
       }}
     >
       {children}
